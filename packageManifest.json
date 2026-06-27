@@ -1,10 +1,10 @@
 {
   "packageName": "HomeSeer PS100 mmWave Presence Sensor",
   "author": "Zac Shenker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "minimumHEVersion": "2.3.0",
   "dateReleased": "2026-06-27",
-  "releaseNotes": "Initial release. Z-Wave Plus driver for the HomeSeer PS100 24 GHz mmWave presence sensor. Exposes presence + motion, per-range sensitivity, no-motion timeout, and LED configuration parameters.",
+  "releaseNotes": "Add verified fingerprints for both PS100 revisions (000C:0204:0002 original, 000C:0204:0003 v2) and auto-detect the variant by product ID. Revision-specific parameters (distance report on original; LED colors on v2) are shown only on the matching unit. Configure no longer overwrites factory defaults you have not changed.",
   "documentationLink": "https://github.com/zshenker/hubitat-homeseer-ps100/blob/main/README.md",
   "communityLink": "https://docs.homeseer.com/products/ps100",
   "id": "5e28e5d8-3e34-4524-8586-e4d7860656e4",

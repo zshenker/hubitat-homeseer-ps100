@@ -64,30 +64,45 @@ no-motion timeout, and front LED behavior/colors) as driver preferences.
 **Factory reset:** press and hold the red Z-Wave button for ~30 seconds (only if
 the controller is missing or the device is unresponsive). Re-include afterward.
 
+## Supported hardware revisions
+
+There are two PS100 Z-Wave revisions; both are supported and auto-detected by
+product ID. Parameters that only exist on one revision are shown in the
+preferences only once that unit is identified (after the first **Configure**).
+
+| Revision | Mfr | Product Type | Product ID | Notable params |
+|----------|-----|--------------|------------|----------------|
+| PS100 (original, "HS-PS100") | `000C` | `0204` | `0002` | has param **2** (distance report); **no** LED color |
+| PS100 v2 | `000C` | `0204` | `0003` | has params **20/21** (LED colors); **no** param 2 |
+
 ## Configuration parameters
 
-These map directly to the
+These map to the
 [HomeSeer Z-Wave parameter spec](https://docs.homeseer.com/products/ps100-specs-z-wave-parameters)
+and the [Z-Wave JS device database](https://devices.zwave-js.io/?jumpTo=0x000c:0x0204:0x0002),
 and are editable from the device preferences:
 
-| # | Preference | Size | Default | Range / Options |
-|---|------------|------|---------|-----------------|
+| # | Preference | Size | Default (orig / v2) | Range / Options |
+|---|------------|------|---------------------|-----------------|
 | 1 | No-motion timeout (s) | 4 | 10 | 10–3600 |
+| 2 | Distance report interval (s) *(original only)* | 4 | 10 | 2–600 |
 | 3 | Bluetooth radio | 1 | Disabled | Disabled / Enabled |
 | 4 | Motion LED | 1 | Enabled | Disabled / Enabled |
-| 6 | Sensitivity 0–75 cm | 1 | 50 | 0–100 (0 = off) |
-| 7 | Sensitivity 75–150 cm | 1 | 50 | 0–100 |
-| 8 | Sensitivity 150–225 cm | 1 | 0 | 0–100 |
-| 9 | Sensitivity 225–300 cm | 1 | 0 | 0–100 |
-| 10 | Sensitivity 300–375 cm | 1 | 0 | 0–100 |
-| 11 | Sensitivity 375–450 cm | 1 | 0 | 0–100 |
-| 12 | Sensitivity 450–525 cm | 1 | 0 | 0–100 |
-| 13 | Sensitivity 525–600 cm | 1 | 0 | 0–100 |
-| 20 | Left LED color | 1 | Off | Off/Red/Green/Blue/Magenta/Yellow/Cyan/White |
-| 21 | Right LED color | 1 | Off | Off/Red/Green/Blue/Magenta/Yellow/Cyan/White |
+| 6 | Sensitivity 0–75 cm | 1 | 50 / 50 | 0–100 (0 = off) |
+| 7 | Sensitivity 75–150 cm | 1 | 50 / 50 | 0–100 |
+| 8 | Sensitivity 150–225 cm | 1 | 50 / 0 | 0–100 |
+| 9 | Sensitivity 225–300 cm | 1 | 50 / 0 | 0–100 |
+| 10 | Sensitivity 300–375 cm | 1 | 90 / 0 | 0–100 |
+| 11 | Sensitivity 375–450 cm | 1 | 90 / 0 | 0–100 |
+| 12 | Sensitivity 450–525 cm | 1 | 90 / 0 | 0–100 |
+| 13 | Sensitivity 525–600 cm | 1 | 90 / 0 | 0–100 |
+| 20 | Left LED color *(v2 only)* | 1 | Off | Off/Red/Green/Blue/Magenta/Yellow/Cyan/White |
+| 21 | Right LED color *(v2 only)* | 1 | Off | Off/Red/Green/Blue/Magenta/Yellow/Cyan/White |
 
 After changing preferences, click **Save Preferences** — the driver pushes the
-new values to the device automatically (it also re-reads them to confirm).
+changed values to the device and re-reads them to confirm. Parameters you leave
+untouched keep the device's own factory values (the driver does not overwrite
+them on install).
 
 ### Tuning tips (from HomeSeer)
 
@@ -120,9 +135,10 @@ update the raw URLs in:
 - `packageManifest.json` (`location`, `documentationLink`, `id`s stay unique)
 - `repository.json` (`gitHubUrl`, `location`)
 
-The `mfr`/`prod`/`deviceId` in the driver fingerprint may also differ slightly
-between firmware revisions — confirm against **Device → Device Details → Data**
-and adjust if you want automatic driver assignment on inclusion.
+The driver ships with verified fingerprints for both PS100 revisions
+(`000C:0204:0002` and `000C:0204:0003`), so it should auto-assign on inclusion.
+If yours reports different IDs under **Device → Device Details → Data**, let me
+know and add a matching `fingerprint` line.
 
 ## Adding to Hubitat Package Manager's public list
 

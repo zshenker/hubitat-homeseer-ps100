@@ -8,7 +8,14 @@
  *  parameters (per-range sensitivity, no-motion timeout, LED behavior/colors)
  *  as driver preferences.
  *
+ *  Supports both HomeSeer PS100 hardware revisions:
+ *    - PS100 (original, "HS-PS100"): mfr 0x000C, productType 0x0204, productId 0x0002
+ *    - PS100 v2:                     mfr 0x000C, productType 0x0204, productId 0x0003
+ *  Parameters that only exist on one revision are shown only when that unit is
+ *  detected (after the first Configure/Refresh reads the product ID).
+ *
  *  Device documentation: https://docs.homeseer.com/products/ps100
+ *  Parameter reference:   https://devices.zwave-js.io/?jumpTo=0x000c:0x0204:0x0002
  *
  *  Copyright 2026 Zac Shenker
  *
@@ -27,14 +34,22 @@
 
 import groovy.transform.Field
 
-@Field static final String DRIVER_VERSION = "1.0.0"
+@Field static final String DRIVER_VERSION = "1.1.0"
+
+@Field static final String PID_V1 = "0002"   // original PS100 (HS-PS100)
+@Field static final String PID_V2 = "0003"   // PS100 v2
 
 /*
- * Z-Wave configuration parameters for the PS100, per HomeSeer's published spec:
- * https://docs.homeseer.com/products/ps100-specs-z-wave-parameters
+ * Z-Wave configuration parameters for the PS100.
+ * Sources: HomeSeer spec (https://docs.homeseer.com/products/ps100-specs-z-wave-parameters)
+ *          Z-Wave JS device DB (https://devices.zwave-js.io/?jumpTo=0x000c:0x0204:0x0002)
  *
  * Each entry drives both a matching preference input and the configure() routine.
  * The preference setting name is "param<number>" (e.g. settings.param1).
+ *
+ *   appliesTo       : optional list of product IDs this param exists on (absent = both)
+ *   defaultValue    : factory default (when identical across revisions)
+ *   defaultByProduct: factory default keyed by product ID (when revisions differ)
  */
 @Field static final Map<Integer, Map> CONFIG_PARAMS = [
     1 : [
@@ -45,9 +60,18 @@ import groovy.transform.Field
         defaultValue: 10,
         range      : "10..3600"
     ],
+    2 : [
+        title      : "Distance report interval (seconds)",
+        description: "Original PS100 only. How often the sensor reports measured distance. Range 2-600. Default 10.",
+        type       : "number",
+        size       : 4,
+        defaultValue: 10,
+        range      : "2..600",
+        appliesTo  : [PID_V1]
+    ],
     3 : [
         title      : "Bluetooth radio",
-        description: "Only used by the HomeSeer mobile app to read the mmWave sensor. Default Disabled.",
+        description: "Only used by the HomeSeer mobile app to read the mmWave sensor. Power-cycle the unit after changing. Default Disabled.",
         type       : "enum",
         size       : 1,
         defaultValue: 0,
@@ -73,44 +97,44 @@ import groovy.transform.Field
     ],
     8 : [
         title      : "Sensitivity: 150-225 cm (4.9-7.3 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 50 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 50, (PID_V2): 0], range: "0..100"
     ],
     9 : [
         title      : "Sensitivity: 225-300 cm (7.3-9.8 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 50 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 50, (PID_V2): 0], range: "0..100"
     ],
     10: [
         title      : "Sensitivity: 300-375 cm (9.8-12.3 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 90 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 90, (PID_V2): 0], range: "0..100"
     ],
     11: [
         title      : "Sensitivity: 375-450 cm (12.3-14.7 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 90 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 90, (PID_V2): 0], range: "0..100"
     ],
     12: [
         title      : "Sensitivity: 450-525 cm (14.7-17.2 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 90 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 90, (PID_V2): 0], range: "0..100"
     ],
     13: [
         title      : "Sensitivity: 525-600 cm (17.2-19.6 ft)",
-        description: "0 = range disabled, 1-100 = sensitivity. Default 0 (disabled).",
-        type       : "number", size: 1, defaultValue: 0, range: "0..100"
+        description: "0 = range disabled, 1-100 = sensitivity. Default: 90 (original) / 0 (v2).",
+        type       : "number", size: 1, defaultByProduct: [(PID_V1): 90, (PID_V2): 0], range: "0..100"
     ],
     20: [
         title      : "Left LED color",
-        description: "Steady color for the left front LED. Default Off.",
-        type       : "enum", size: 1, defaultValue: 0,
+        description: "PS100 v2 only. Steady color for the left front LED. Default Off.",
+        type       : "enum", size: 1, defaultValue: 0, appliesTo: [PID_V2],
         options    : [0: "Off", 1: "Red", 2: "Green", 3: "Blue", 4: "Magenta", 5: "Yellow", 6: "Cyan", 7: "White"]
     ],
     21: [
         title      : "Right LED color",
-        description: "Steady color for the right front LED. Default Off.",
-        type       : "enum", size: 1, defaultValue: 0,
+        description: "PS100 v2 only. Steady color for the right front LED. Default Off.",
+        type       : "enum", size: 1, defaultValue: 0, appliesTo: [PID_V2],
         options    : [0: "Off", 1: "Red", 2: "Green", 3: "Blue", 4: "Magenta", 5: "Yellow", 6: "Cyan", 7: "White"]
     ]
 ]
@@ -128,22 +152,25 @@ metadata {
         capability "Configuration"
         capability "Refresh"
 
-        // HomeSeer manufacturer ID is 000C. Product type/ID below match the PS100;
-        // adjust if your "Device Details > Data" shows different values.
-        fingerprint mfr: "000C", prod: "0203", deviceId: "0001",
-            inClusters: "0x5E,0x55,0x9F,0x6C,0x71,0x30,0x85,0x70,0x86,0x72,0x5A,0x73,0x7A,0x59,0x84",
-            controllerType: "ZWV", deviceJoinName: "HomeSeer PS100 mmWave Presence Sensor"
+        // HomeSeer = mfr 000C. Two hardware revisions share productType 0204.
+        fingerprint mfr: "000C", prod: "0204", deviceId: "0002",
+            deviceJoinName: "HomeSeer PS100 mmWave Presence Sensor"
+        fingerprint mfr: "000C", prod: "0204", deviceId: "0003",
+            deviceJoinName: "HomeSeer PS100 mmWave Presence Sensor (v2)"
     }
 
     preferences {
+        String pid = getDataValue("productId")
         CONFIG_PARAMS.each { num, p ->
+            if (!paramApplies(p, pid)) return
+            def dflt = paramDefault(p, pid)
             if (p.type == "enum") {
                 input name: "param${num}", type: "enum", title: "<b>[${num}] ${p.title}</b>",
                     description: p.description, options: p.options,
-                    defaultValue: p.defaultValue, required: false
+                    defaultValue: dflt, required: false
             } else {
                 input name: "param${num}", type: "number", title: "<b>[${num}] ${p.title}</b>",
-                    description: p.description, defaultValue: p.defaultValue,
+                    description: p.description, defaultValue: dflt,
                     range: p.range, required: false
             }
         }
@@ -160,8 +187,6 @@ metadata {
 
 void installed() {
     logInfo "Installed - driver v${DRIVER_VERSION}"
-    // Seed preference defaults so the first configure() pushes known-good values.
-    CONFIG_PARAMS.each { num, p -> device.updateSetting("param${num}", [value: p.defaultValue, type: p.type]) }
     runIn(2, "configure")
 }
 
@@ -183,13 +208,19 @@ void logsOff() {
 // ===================================================================================
 
 List<String> configure() {
-    logInfo "Configuring device parameters..."
+    logInfo "Configuring device..."
     List<String> cmds = []
+    String pid = getDataValue("productId")
 
     CONFIG_PARAMS.each { num, p ->
-        Integer value = (settings."param${num}" != null ? settings."param${num}" : p.defaultValue) as Integer
-        cmds << secure(zwave.configurationV1.configurationSet(
-            parameterNumber: num, size: p.size, scaledConfigurationValue: value))
+        if (!paramApplies(p, pid)) return
+        def value = settings."param${num}"
+        // Only push a value the user has set; otherwise just read the device's
+        // current value (avoids stomping factory defaults that differ by revision).
+        if (value != null) {
+            cmds << secure(zwave.configurationV1.configurationSet(
+                parameterNumber: num, size: p.size, scaledConfigurationValue: value as Integer))
+        }
         cmds << secure(zwave.configurationV1.configurationGet(parameterNumber: num))
     }
 
@@ -204,10 +235,10 @@ List<String> configure() {
 List<String> refresh() {
     logDebug "Refreshing device state..."
     List<String> cmds = [
-        secure(zwave.notificationV8.notificationGet(notificationType: 0x07, event: 0x08)),
-        secure(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 0x0C)),
+        secure(zwave.manufacturerSpecificV2.manufacturerSpecificGet()),
         secure(zwave.versionV2.versionGet()),
-        secure(zwave.manufacturerSpecificV2.manufacturerSpecificGet())
+        secure(zwave.notificationV8.notificationGet(notificationType: 0x07, event: 0x08)),
+        secure(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 0x0C))
     ]
     return delayBetween(cmds, 500)
 }
@@ -310,6 +341,8 @@ void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv2.ManufacturerSpecif
     updateDataValue("manufacturer", hubitat.helper.HexUtils.integerToHexString(cmd.manufacturerId, 2))
     updateDataValue("productTypeId", hubitat.helper.HexUtils.integerToHexString(cmd.productTypeId, 2))
     updateDataValue("productId", hubitat.helper.HexUtils.integerToHexString(cmd.productId, 2))
+    String pid = hubitat.helper.HexUtils.integerToHexString(cmd.productId, 2)
+    logInfo "Identified as ${pid == PID_V1 ? 'PS100 (original)' : pid == PID_V2 ? 'PS100 v2' : "unknown variant (productId ${pid})"}"
 }
 
 void zwaveEvent(hubitat.zwave.Command cmd) {
@@ -319,6 +352,21 @@ void zwaveEvent(hubitat.zwave.Command cmd) {
 // ===================================================================================
 //  Helpers
 // ===================================================================================
+
+// True if a parameter exists on the detected revision. When the product ID is
+// not yet known, all parameters are treated as applicable (safe superset).
+private boolean paramApplies(Map p, String pid) {
+    return !p.appliesTo || !pid || (pid in p.appliesTo)
+}
+
+// Factory default for a parameter, accounting for revision-specific differences.
+private Integer paramDefault(Map p, String pid) {
+    if (p.defaultByProduct) {
+        Integer v = (pid && p.defaultByProduct[pid] != null) ? p.defaultByProduct[pid] : null
+        return (v != null) ? v : p.defaultByProduct.values().first()
+    }
+    return p.defaultValue
+}
 
 private void updatePresence(Boolean active) {
     String presence = active ? "present" : "not present"
