@@ -39,7 +39,7 @@ no-motion timeout, and front LED behavior/colors) as driver preferences.
    `PS100` (once this package is added to the community repository), **or**
    choose **Install → From a URL** and paste the manifest URL:
    ```
-   https://raw.githubusercontent.com/zacshenker/hubitat-homeseer-ps100/main/packageManifest.json
+   https://raw.githubusercontent.com/zshenker/hubitat-homeseer-ps100/main/packageManifest.json
    ```
 3. Follow the prompts to install. HPM will keep the driver up to date.
 
@@ -48,7 +48,7 @@ no-motion timeout, and front LED behavior/colors) as driver preferences.
 1. In Hubitat, go to **Drivers Code → New Driver → Import**.
 2. Paste this URL and click **Import**, then **Save**:
    ```
-   https://raw.githubusercontent.com/zacshenker/hubitat-homeseer-ps100/main/drivers/homeseer-ps100-presence-sensor.groovy
+   https://raw.githubusercontent.com/zshenker/hubitat-homeseer-ps100/main/drivers/homeseer-ps100-presence-sensor.groovy
    ```
 
 ## Pairing the device
@@ -112,7 +112,7 @@ new values to the device automatically (it also re-reads them to confirm).
 
 ## Important: update the placeholder URLs
 
-This repo assumes the GitHub path `zacshenker/hubitat-homeseer-ps100` and the
+This repo assumes the GitHub path `zshenker/hubitat-homeseer-ps100` and the
 `main` branch. If your GitHub username, repo name, or default branch differ,
 update the raw URLs in:
 

@@ -118,9 +118,9 @@ import groovy.transform.Field
 metadata {
     definition(
         name     : "HomeSeer PS100 mmWave Presence Sensor",
-        namespace: "zacshenker",
+        namespace: "zshenker",
         author   : "Zac Shenker",
-        importUrl: "https://raw.githubusercontent.com/zacshenker/hubitat-homeseer-ps100/main/drivers/homeseer-ps100-presence-sensor.groovy"
+        importUrl: "https://raw.githubusercontent.com/zshenker/hubitat-homeseer-ps100/main/drivers/homeseer-ps100-presence-sensor.groovy"
     ) {
         capability "PresenceSensor"
         capability "MotionSensor"
