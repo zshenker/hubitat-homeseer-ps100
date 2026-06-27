@@ -1,0 +1,14 @@
+{
+  "author": "Zac Shenker",
+  "gitHubUrl": "https://github.com/zacshenker/hubitat-homeseer-ps100",
+  "payPalUrl": "",
+  "packages": [
+    {
+      "name": "HomeSeer PS100 mmWave Presence Sensor",
+      "category": "Sensors",
+      "location": "https://raw.githubusercontent.com/zacshenker/hubitat-homeseer-ps100/main/packageManifest.json",
+      "description": "Z-Wave Plus driver for the HomeSeer PS100 24 GHz mmWave presence sensor. Reports presence and motion and exposes per-range sensitivity, no-motion timeout, and LED configuration.",
+      "tags": ["Sensors", "Presence", "Motion", "Z-Wave"]
+    }
+  ]
+}
